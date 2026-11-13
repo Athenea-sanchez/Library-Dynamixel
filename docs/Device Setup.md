@@ -16,7 +16,7 @@ Dado que la interfaz USB (como el U2D2) no suministra energía directa a los mot
 
 ## Identificación de componentes en la tarjeta
 
-![Conexión](docs/images/conexion.jpg)
+![Conexión](images/conexion.jpg)
 
 ### Descripción de conexiones:
 * **Connection to PC:** Cable USB conectado al módulo de comunicación U2D2 para el envío de comandos desde la computadora.
