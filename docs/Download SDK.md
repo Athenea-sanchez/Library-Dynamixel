@@ -59,9 +59,10 @@ Para evitar el error de compilación `fatal error: dynamixel_sdk/dynamixel_sdk.h
    git clone https://github.com/ROBOTIS-GIT/DynamixelSDK.git
 
 2. Copiar la carpeta de cabeceras a la ruta de tu proyecto:
+``` bash
    cp -r DynamixelSDK/c++/include/dynamixel_sdk ~/Dynamixel/dynamixel-ctrl/src/brazo/armAX/include/
-
-3. Verificar que la estructura en `brazo/armAX/include/` quede configurada así:
+ ```
+4. Verificar que la estructura en `brazo/armAX/include/` quede configurada así:
    brazo/armAX/include/
    ├── armAX.h
    ├── DynamixelAXControl.h
