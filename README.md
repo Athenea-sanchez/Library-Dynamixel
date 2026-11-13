@@ -51,4 +51,4 @@ ros2 topic echo /joint_states
 source ~/Dynamixel/dynamixel-ctrl/src/brazo/armAX_ws/install/setup.bash
 ros2 topic pub --once /joint_commands sensor_msgs/msg/JointState "{position: [0.0, 0.5], velocity: [0.1]}"
 ```
-*(Nota: Si decides mover todos tus archivos `.md` a una subcarpeta `docs/`, únicamente antepón `docs/` a cada enlace en el índice, por ejemplo: `[Library Setup](<docs/Library Setup.md>)`).*
+
