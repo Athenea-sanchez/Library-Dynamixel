@@ -1,86 +1,62 @@
-# Ruta de Aprendizaje e Integración Paso a Paso para PC (Linux x86_64)
+# Ruta de Aprendizaje e Integración Paso a Paso (Linux x86_64 / Jetson Orin)
 
-Sigue los documentos de la carpeta `docs/` en este orden estricto para configurar el entorno en tu PC:
-
----
-
-### 1. 🗋 `Overview.md` (Visión General)
-* **Objetivo:** Comprender las capacidades de la librería `dynamixel-ctrl`, los modelos de la Serie AX (AX-12A / AX-18A) y la arquitectura para **PC (x86_64)** con comunicación por conversor USB-FTDI / U2D2 (`/dev/ttyUSB0`)[cite: 1].
-* **Lo que harás:** Verificar que tu hardware cumple con los requisitos del sistema.
+Sigue los documentos de la carpeta `docs/` en este orden estricto para configurar hardware, compilar la librería y ejecutar el controlador en **ROS 2 Jazzy**:
 
 ---
 
-### 2. 🗋 `Download_SDK.md` (Descarga e Instalación del DYNAMIXEL SDK)
-* **Objetivo:** Obtener e instalar las capas base oficiales del **DYNAMIXEL SDK** de ROBOTIS en tu PC.
-* **Lo que harás:** 
-  1. Descargar el SDK mediante Git (`git clone https://github.com/ROBOTIS-GIT/DynamixelSDK.git`), Releases o paquetes de ROS (`ros-$ROS_DISTRO-dynamixel-sdk`).
-  2. Comprender la estructura modular del SDK para compilar y enlazar las librerías dinámicas (`.so`).
+### 1. [`Overview.md`](Overview.md) (Visión General y Arquitectura)
+* **Objetivo:** Comprender las capacidades de la librería `dynamixel-ctrl`, los modelos soportados de la **Serie AX** (AX-12A / AX-18A) y la arquitectura para **PC (x86_64)** y **NVIDIA Jetson Orin** mediante conversor USB-FTDI / U2D2 (`/dev/ttyUSB0`) a 1 Mbps.
+* **Lo que harás:** Verificar que tu hardware y distribución (Ubuntu 24.04 + ROS 2 Jazzy) cumplen con los requisitos del sistema.
 
 ---
 
-### 3. 🗋 `Download.md` (Descarga y Estructura x86_64 del Repositorio)
-* **Objetivo:** Obtener el código fuente de la librería `dynamixel-ctrl` y entender el árbol de carpetas.
+### 2. [`Virtual_Environment.md`](Virtual_Environment.md) (Gestión del Entorno Python)
+* **Objetivo:** Asegurar que el sistema utilice el intérprete nativo de Python 3.12 requerido por ROS 2 Jazzy.
+* **Lo que harás:** Desactivar cualquier entorno virtual (`deactivate`) para evitar conflictos de paquetes (`empy`, `catkin_pkg`) al compilar con `colcon`.
+
+---
+
+### 3. [`Download.md`](Download.md) y [`Download SDK.md`](<Download SDK.md>) (Descarga e Integración del SDK)
+* **Objetivo:** Obtener el código fuente de `dynamixel-ctrl` y preparar las cabeceras del **DYNAMIXEL SDK** (Protocolo 1.0).
 * **Lo que harás:**
   1. Clonar el repositorio principal con `git clone`.
-  2. Verificar que en la carpeta `brazo/armAX/lib/` se encuentra la librería compartida compilada para PC: **`libdxl_x64_cpp.so`**[cite: 1].
+  2. Verificar que en `src/brazo/armAX/lib/` se encuentra la librería compartida (`libdxl_x64_cpp.so`) y que las cabeceras `dynamixel_sdk/` estén ubicadas dentro de `include/`.
 
 ---
 
-### 4. 🗋 `Device_Setup.md` (Configuración del Puerto y Calibración)
-* **Objetivo:** Preparar los servomotores y los permisos del sistema operativo.
+### 4. [`Device Setup.md`](<Device Setup.md>) (Configuración del Puerto y Hardware)
+* **Objetivo:** Preparar los servomotores, la alimentación y los permisos del sistema operativo.
 * **Lo que harás:**
-  1. Alimentar el bus con fuente externa de 12V DC.
-  2. Conectar el adaptador USB-FTDI o U2D2 a la PC.
-  3. Ejecutar `sudo usermod -aG dialout $USER` para dar permisos de lectura/escritura al puerto `/dev/ttyUSB0` sin requerir `sudo`.
-  4. Asignar IDs únicas a cada motor con DYNAMIXEL Wizard 2.0 y configurar la velocidad de transmisión a 1,000,000 bps.
+  1. Alimentar el bus Dynamixel con fuente externa de 12V DC y conectar el adaptador USB-Serial (ver diagrama en [`conexion.jpg`](conexion.jpg)).
+  2. Otorgar permisos de lectura/escritura al puerto `/dev/ttyUSB0` (`sudo usermod -aG dialout $USER` y `sudo chmod 666 /dev/ttyUSB0`).
+  3. *(En Jetson Orin)* Verificar la carga de módulos kernel (`ftdi_sio` / `ch341`) y modo de energía (`nvpmodel -m 0`).
 
 ---
 
-### 5. 🗋 `Library_Setup.md` (Compilación Nativa en PC)
-* **Objetivo:** Compilar la librería base C++ (`armAX`) y los bindings de Python en x86_64.
+### 5. [`Library Setup.md`](<Library Setup.md>) (Compilación y Despliegue en ROS 2 Jazzy)
+* **Objetivo:** Configurar los IDs de los motores activos, compilar el paquete C++ (`arm_ax_cpp_pkg`) y operar el brazo en ROS 2.
 * **Lo que harás:**
-  1. Instalar prerrequisitos: `sudo apt install build-essential cmake git python3-dev python3-pip`.
-  2. Compilar la librería base:
+  1. Copiar las cabeceras `dynamixel_sdk/` y los binarios `.so`/`.a` hacia `src/brazo/armAX_ws/src/arm_ax_cpp_pkg/`.
+  2. Declarar los IDs de los motores activos en `src/armAX.cpp` (evitando *stack smashing*) y elegir entre **Modo Articulación** (`setJointMode`) o **Modo Rueda** (`setWheelMode`).
+  3. Compilar el workspace:
      ```bash
-     cd brazo/armAX
-     mkdir -p build && cd build
-     cmake ..
-     make -j$(nproc)
+     cd ~/Dynamixel/dynamixel-ctrl/src/brazo/armAX_ws
+     rm -rf build/arm_ax_cpp_pkg install/arm_ax_cpp_pkg
+     colcon build --packages-select arm_ax_cpp_pkg --symlink-install
      ```
-  3. Compilar el espacio de trabajo de ROS 2 (opcional si usas ROS 2 en PC):
-     ```bash
-     cd brazo/armAX_ws
-     colcon build --symlink-install
-     source install/setup.bash
-     ```
+  4. Ejecutar el flujo operativo en **3 terminales**:
+     * **Terminal 1 (Driver):** `ros2 run arm_ax_cpp_pkg arm_ax_node`
+     * **Terminal 2 (Telemetría):** `ros2 topic echo /joint_states`
+     * **Terminal 3 (Comandos):** `ros2 topic pub --once /joint_commands sensor_msgs/msg/JointState "{position: [0.0, 0.5], velocity: [0.1]}"`
 
 ---
 
-### 6. 🗋 `Sync_Read_Write.md` (Tutorial C++ en PC)
-* **Objetivo:** Crear y ejecutar tu primer programa C++ de control síncrono del brazo en PC.
-* **Lo que harás:**
-  1. Crear el archivo `my_sync_read_write.cpp` incluyendo `armAX.h` y `DynamixelManager.h`.
-  2. Compilar el ejecutable enlazando la librería de PC `libdxl_x64_cpp.so`:
-     ```bash
-     g++ my_sync_read_write.cpp -o my_sync_read_write \
-         -I../../armAX/include \
-         -L../../armAX/lib \
-         -larmAX -lDynamixelAXControl -lDynamixelManager -ldxl_x64_cpp -lpthread
-     ```
-  3. Ejecutar especificando la variable de entorno `LD_LIBRARY_PATH`:
-     ```bash
-     LD_LIBRARY_PATH=../../armAX/lib ./my_sync_read_write
-     ```
+### 6. [`Basic Read_write.md`](<Basic Read_write.md>) (Tutorial Standalone C++ sin ROS 2)
+* **Objetivo:** Probar el control directo de un servomotor individual en C++ puro mediante `DynamixelManager` y `DynamixelAXControl`.
+* **Lo que harás:** Compilar `my_read_write.cpp` con `g++` enlazando `-lDynamixelAXControl -lDynamixelManager -ldxl_x64_cpp` y ejecutarlo usando `LD_LIBRARY_PATH`.
 
 ---
 
-### 7. 🗋 `ROS2_Integration.md` (Integración ROS 2 en PC)
-* **Objetivo:** Ejecutar los nodos de control de alto nivel si utilizas ROS 2 en tu PC.
-* **Lo que harás:**
-  1. Ejecutar el nodo en C++: `ros2 run arm_ax_cpp_pkg arm_ax_cpp_node`.
-  2. Probar el envío de comandos publicando en el tópico `/arm/set_positions` y monitorear telemetría en `/joint_states`.
-
----
-
-### 🗋 `API_Reference.md` (Consulta Técnica)
-* **Uso:** Manual de referencia permanente durante el desarrollo para consultar clases, métodos y parámetros de `DynamixelManager`, `DynamixelAXControl` y `armAX`.
+### 7. [`Arquitectura por capas.md`](<Arquitectura por capas.md>) y [`API_Reference.md`](API_Reference.md) (Referencia Técnica)
+* **Objetivo:** Profundizar en el diseño interno de la librería y las firmas de sus métodos públicos.
+* **Lo que harás:** Consultar el diagrama de capas (`DynamixelSDK` $\rightarrow$ `DynamixelManager` $\rightarrow$ `armAX` $\rightarrow$ `ArmAXNode`) y la documentación detallada de cada función disponible.
