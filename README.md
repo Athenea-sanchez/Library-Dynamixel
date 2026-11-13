@@ -40,13 +40,13 @@ Una vez compilado el workspace siguiendo la guía de **[Library Setup](<Library 
   ros2 run arm_ax_cpp_pkg arm_ax_node
   ```
 
-  * **Terminal 2 — Monitoreo de Telemetría (/joint_states):**
+* **Terminal 2 — Monitoreo de Telemetría (/joint_states):**
 ```bash
 source ~/Dynamixel/dynamixel-ctrl/src/brazo/armAX_ws/install/setup.bash
 ros2 topic echo /joint_states
   ```
 
-  * **Terminal 3 — Envío de Comandos (/joint_commands):**
+* **Terminal 3 — Envío de Comandos (/joint_commands):**
 ```bash
 source ~/Dynamixel/dynamixel-ctrl/src/brazo/armAX_ws/install/setup.bash
 ros2 topic pub --once /joint_commands sensor_msgs/msg/JointState "{position: [0.0, 0.5], velocity: [0.1]}"
