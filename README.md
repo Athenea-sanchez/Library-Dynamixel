@@ -34,7 +34,7 @@ Explora las guías técnicas detalladas según la etapa de configuración o desa
 Una vez compilado el workspace siguiendo la guía de **[Library Setup](<Library Setup.md>)**, abre 3 terminales para operar el brazo robótico:
 
 * **Terminal 1 — Nodo Driver Hardware:**
-  ```bash
+```bash
   source ~/Dynamixel/dynamixel-ctrl/src/brazo/armAX_ws/install/setup.bash
   sudo chmod 666 /dev/ttyUSB0
   ros2 run arm_ax_cpp_pkg arm_ax_node
@@ -44,7 +44,7 @@ Una vez compilado el workspace siguiendo la guía de **[Library Setup](<Library 
 ```bash
 source ~/Dynamixel/dynamixel-ctrl/src/brazo/armAX_ws/install/setup.bash
 ros2 topic echo /joint_states
-  ```
+ ```
 
 * **Terminal 3 — Envío de Comandos (/joint_commands):**
 ```bash
